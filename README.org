@@ -1,0 +1,3 @@
+#+TITLE: Violins Detection
+
+Detecting the presence of violins in music

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def main():
-    cap = cv2.VideoCapture('fight.avi')
+    cap = cv2.VideoCapture('datasets/fight.avi')
     fgbg = cv2.createBackgroundSubtractorMOG2(varThreshold=15, detectShadows=True)
     while True:
         _, frame = cap.read()

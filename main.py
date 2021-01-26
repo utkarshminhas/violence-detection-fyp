@@ -2,9 +2,10 @@ import cv2
 import numpy as np
 
 import novel_approach
+import paths
 
 def main():
-    cap = cv2.VideoCapture('datasets/fight.avi')
+    cap = cv2.VideoCapture(paths._DATASET_PATH)
 
     while True:
         _, frame = cap.read()

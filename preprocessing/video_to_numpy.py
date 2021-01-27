@@ -4,7 +4,13 @@ import matplotlib.pyplot as plt
 import os 
 from tqdm import tqdm
 
-import paths
+
+def generate_numpy(source_path, target_path):
+    for category in ['train', 'val']:
+        for label in ['Fight', 'NonFight']:
+            input_path = os.path.join(source_path, category, label)
+            save_path = os.path.join(target_path, category, label)
+            save_to_numpy(file_dir=input_path, save_dir=save_path)
 
 
 def get_optical_flow(video):
@@ -27,7 +33,7 @@ def get_optical_flow(video):
     return np.array(flows, dtype=np.float32)
 
 
-def video_to_npy(file_path, resize=(224,224)):
+def convert_to_numpy(file_path, resize=(224,224)):
     cap = cv2.VideoCapture(file_path)
     len_frames = int(cap.get(7))
 
@@ -54,7 +60,7 @@ def video_to_npy(file_path, resize=(224,224)):
     return result
 
 
-def save_to_npy(file_dir, save_dir):
+def save_to_numpy(file_dir, save_dir):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -63,20 +69,6 @@ def save_to_npy(file_dir, save_dir):
         video_name = v.split('.')[0]
         video_path = os.path.join(file_dir, v)
         save_path = os.path.join(save_dir, video_name + '.npy') 
-        data = video_to_npy(file_path=video_path, resize=(224,224))
+        data = convert_to_numpy(file_path=video_path, resize=(224,224))
         data = np.uint8(data)
         np.save(save_path, data)
-
-
-def main():
-    source_path = paths.source_path
-    target_path = paths.target_path
-    
-    for category in ['train', 'val']:
-        for label in ['Fight', 'NonFight']:
-            input_path = os.path.join(source_path, category, label)
-            save_path = os.path.join(target_path, category, label)
-            save_to_npy(file_dir=input_path, save_dir=save_path)
-
-if __name__ == '__main__':
-    main()

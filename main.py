@@ -1,26 +1,12 @@
-import cv2
-import numpy as np
-
-import novel_approach
+from preprocessing import novel_approach, video_to_numpy, video_to_frames
 import paths
 
+
 def main():
-    cap = cv2.VideoCapture(paths._DATASET_PATH)
+    novel_approach.display_preprocessed_video(video_path=paths._DATASET_PATH)
+    # video_to_numpy.generate_numpy(paths.source_path, paths.target_path)
+    # video_to_frames.generate_frames(source_path=paths.source_path, target_path=paths.target_path)
 
-    while True:
-        _, frame = cap.read()
-
-        new_frame = novel_approach.calculate_boundaries(frame)
-        cv2.imshow('Novel Preprocessed Frame', new_frame)
-
-        pass
-
-        k = cv2.waitKey(30)
-        if k == 27:
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()

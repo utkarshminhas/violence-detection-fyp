@@ -1,32 +1,28 @@
 import cv2
 import numpy as np
 import os
-import sys
-import math
 from tqdm import tqdm
 
-import novel_approach
-import paths
+from preprocessing import novel_approach
 
-def main():
-    source_path = paths.source_path
-    target_path = paths.target_path
-    
+
+def generate_frames(source_path, target_path):
     for category in ['train', 'val']:
         for label in ['Fight', 'NonFight']:
             input_path = os.path.join(source_path, category, label)
             save_path = os.path.join(target_path, category, label)
-            save_to_frames(input_path=input_path, save_dir=save_path)
+            save_to_frames(file_dir=input_path, save_dir=save_path)
 
-def save_to_frames(input_path, save_dir):
+
+def save_to_frames(file_dir, save_dir):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    videos = os.listdir(input_path)
+    videos = os.listdir(file_dir)
 
     for v in tqdm(videos):
         video_name = v.split('.')[0]
-        video_path = os.path.join(input_path, v)
+        video_path = os.path.join(file_dir, v)
 
         target_base_name = os.path.join(save_dir, video_name)
 
@@ -57,6 +53,3 @@ def save_to_frames(input_path, save_dir):
 
         cap.release()
         cv2.destroyAllWindows()
-
-if __name__ == '__main__':
-    main()

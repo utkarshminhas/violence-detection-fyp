@@ -17,3 +17,23 @@ def get_mask(frame):
 def calculate_boundaries(frame):
     masked_frame = get_mask(frame)
     return masked_frame
+
+
+def display_preprocessed_video(video_path):
+    cap = cv2.VideoCapture(video_path)
+
+    while True:
+        success, frame = cap.read()
+
+        if not success or frame is None:
+            break
+
+        new_frame = get_mask(frame)
+        cv2.imshow('Novel Preprocessed Frame', new_frame)
+
+        k = cv2.waitKey(30)
+        if k == 27 or k == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()

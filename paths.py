@@ -1,4 +1,6 @@
-_DATASET_PATH = 'datasets/Fights/fight.avi'
+import os
 
-source_path = 'datasets/RWF-2000'
-target_path = 'datasets/RWF-2000-Target'
+_DATASET_PATH = os.path.join('datasets', 'RWF-2000', 'val', 'Fight', 'fight.avi')
+
+source_path = os.path.join('datasets', 'RWF-2000')
+target_path = os.path.join('datasets', 'RWF-2000-Target')

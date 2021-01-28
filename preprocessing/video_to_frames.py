@@ -7,6 +7,8 @@ from preprocessing import novel_approach
 
 
 def generate_frames(source_path, target_path):
+    """Generates individual images of frames from input video source and stores them in a folder
+"""
     for category in ['train', 'val']:
         for label in ['Fight', 'NonFight']:
             input_path = os.path.join(source_path, category, label)
@@ -15,6 +17,8 @@ def generate_frames(source_path, target_path):
 
 
 def save_to_frames(file_dir, save_dir):
+    """Saves individual video to a specified path
+"""
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 

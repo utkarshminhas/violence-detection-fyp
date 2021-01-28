@@ -6,6 +6,8 @@ from tqdm import tqdm
 
 
 def generate_numpy(source_path, target_path):
+    """Generates individual numpy files from input video source and stores them in a folder
+"""
     for category in ['train', 'val']:
         for label in ['Fight', 'NonFight']:
             input_path = os.path.join(source_path, category, label)
@@ -14,6 +16,8 @@ def generate_numpy(source_path, target_path):
 
 
 def get_optical_flow(video):
+    """Gets the optical flow of an image
+"""
     gray_video = []
     for i in range(len(video)):
         img = cv2.cvtColor(video[i], cv2.COLOR_RGB2GRAY)
@@ -34,6 +38,8 @@ def get_optical_flow(video):
 
 
 def convert_to_numpy(file_path, resize=(224,224)):
+    """Generates the numpy file of a single video file
+"""
     cap = cv2.VideoCapture(file_path)
     len_frames = int(cap.get(7))
 
@@ -61,6 +67,8 @@ def convert_to_numpy(file_path, resize=(224,224)):
 
 
 def save_to_numpy(file_dir, save_dir):
+    """Saves the individual numpy files in a directory
+"""
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 

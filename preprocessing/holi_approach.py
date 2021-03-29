@@ -1,13 +1,75 @@
 import cv2
 import numpy as np
 from functools import cmp_to_key
+import os
 
+scale_factor = 128
 
 # video_001 -> [subvideo_01, subvideo_02, ...]
-def holi_approach(video):
+def holi_approach(video_path):
   subvideos = []
 
-  # Do somthing yaha pe
+  cap = cv2.VideoCapture(video_path)
+
+  _, previous_frame = cap.read()
+  _, current_frame = cap.read()
+
+  frame_count = 0
+  boundaries = []
+
+  whole_set = []
+  current_set = []
+
+  while cap.isOpened():
+    if frame_count % 5 == 1:
+      mask = get_mask(previous_frame, current_frame)
+      contours = get_contours(mask)
+      nominated_contours = get_contour_positions(contours)
+      winning_contours = clean_contours(nominated_contours)
+
+      boundaries = winning_contours
+
+      whole_set.extend(current_set)
+
+      current_set = []
+      for _ in boundaries:
+        current_set.append([])
+
+    for boundary_index, boundary in enumerate(boundaries):
+      (x, y, w, h) = boundary
+
+      cropped_frame = previous_frame[int(max(0, y)):int(min(cap.get(4), y + h)), int(max(0, x)):int(min(cap.get(3), x + w))]
+
+      cropped_frame = cv2.resize(cropped_frame, (128, 128))
+      current_set[boundary_index].append(cropped_frame)
+
+    cv2.imshow("Activity", previous_frame)
+
+    previous_frame = current_frame
+    success, current_frame = cap.read()
+
+    if not success or current_frame is None:
+      break
+
+    k = cv2.waitKey(30)
+    if k == 27 or k == ord('q'):
+      break
+
+    frame_count += 1
+
+  cap.release()
+  cv2.destroyAllWindows()
+
+  for i, sub in enumerate(whole_set):
+    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
+    out = cv2.VideoWriter(f"output_{i}.avi", fourcc, 5.0, (128, 128))
+
+    for frame in sub:
+      out.write(frame)
+
+    out.release()
 
   return subvideos
 
@@ -129,4 +191,4 @@ def display_contours(video_path):
 
 
 if __name__ == '__main__':
-  display_contours(r'..\datasets\RWF-2000\train\Fight\EtRfZ2KP_5.avi')
+  holi_approach(r'..\datasets\RWF-2000\train\Fight\Ile3EVQA_0.avi')

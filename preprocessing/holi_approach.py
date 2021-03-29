@@ -3,12 +3,10 @@ import numpy as np
 from functools import cmp_to_key
 import os
 
-scale_factor = 128
+image_size = (128, 128)
 
 # video_001 -> [subvideo_01, subvideo_02, ...]
 def holi_approach(video_path):
-  subvideos = []
-
   cap = cv2.VideoCapture(video_path)
 
   _, previous_frame = cap.read()
@@ -40,7 +38,7 @@ def holi_approach(video_path):
 
       cropped_frame = previous_frame[int(max(0, y)):int(min(cap.get(4), y + h)), int(max(0, x)):int(min(cap.get(3), x + w))]
 
-      cropped_frame = cv2.resize(cropped_frame, (128, 128))
+      cropped_frame = cv2.resize(cropped_frame, image_size)
       current_set[boundary_index].append(cropped_frame)
 
     cv2.imshow("Activity", previous_frame)
@@ -51,7 +49,7 @@ def holi_approach(video_path):
     if not success or current_frame is None:
       break
 
-    k = cv2.waitKey(30)
+    k = cv2.waitKey(10)
     if k == 27 or k == ord('q'):
       break
 
@@ -60,21 +58,29 @@ def holi_approach(video_path):
   cap.release()
   cv2.destroyAllWindows()
 
+  return whole_set
+
+def write_subvideos(video_path):
+  whole_set = holi_approach(video_path)
+
   for i, sub in enumerate(whole_set):
-    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
-    out = cv2.VideoWriter(f"output_{i}.avi", fourcc, 5.0, (128, 128))
+
+    base_directory = os.path.basename(os.path.join(r'D:\Users\Madhavan\Repositories\Violence-Detection-FYP\preprocessing', os.path.splitext(video_path)[0]))
+    if not os.path.exists(base_directory):
+      os.makedirs(base_directory)
+
+    print(base_directory)
+
+    out = cv2.VideoWriter(os.path.join(base_directory, f"output_{i}.avi"), fourcc, 5.0, image_size)
 
     for frame in sub:
       out.write(frame)
 
     out.release()
 
-  return subvideos
 
-
-def resize_contour(current_size, aspect_ratio = (1, 1)):
+def resize_contour(current_size, aspect_ratio = image_size):
   (x, y, w, h) = current_size
 
   if w / h > aspect_ratio[0] / aspect_ratio[1]:
@@ -174,7 +180,7 @@ def display_contours(video_path):
 
     cv2.putText(previous_frame, f"{len(winning_contours)} + {len(nominated_contours) - len(winning_contours)} region(s)", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 1)
 
-    image = cv2.resize(previous_frame, (1280,720))
+    image = cv2.resize(previous_frame, (1280, 720))
     out.write(image)
 
     cv2.imshow("Activity", previous_frame)
@@ -191,4 +197,5 @@ def display_contours(video_path):
 
 
 if __name__ == '__main__':
-  holi_approach(r'..\datasets\RWF-2000\train\Fight\Ile3EVQA_0.avi')
+  write_subvideos(r'..\datasets\RWF-2000\val\Fight\fight.avi')
+  # display_contours(r'..\datasets\RWF-2000\val\Fight\fight.avi'))

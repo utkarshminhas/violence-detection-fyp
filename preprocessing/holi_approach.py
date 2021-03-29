@@ -11,6 +11,7 @@ def holi_approach(video):
 
   return subvideos
 
+
 def resize_contour(current_size, aspect_ratio = (1, 1)):
   (x, y, w, h) = current_size
 
@@ -32,80 +33,100 @@ def resize_contour(current_size, aspect_ratio = (1, 1)):
 
   return (x, y, w, h)
 
-def display_video(video_path):
+
+def clean_contours(contours):
+  def is_contour_overlapping(i, j): # Is i completely inside j?
+      (ix, iy, iw, ih) = i
+      (jx, jy, jw, jh) = j
+
+      return ix > jx and ix + iw < jx + jw and iy > jy and iy + ih < jy + jh
+
+
+  cleaned_contours = []
+  contours = sorted(contours, key=cmp_to_key(lambda c1, c2: c2[2] * c2[3] - c1[2] * c1[3]))
+
+  for i in range(len(contours)):
+    for j in range(i):
+      (ix, iy, iw, ih) = contours[i]
+      (jx, jy, jw, jh) = contours[j]
+
+      if is_contour_overlapping(contours[i], contours[j]):
+        break
+    else:
+      cleaned_contours.append(contours[i])
+
+  return cleaned_contours
+
+
+def get_mask(previous_frame, current_frame):
+  frame = cv2.absdiff(previous_frame, current_frame)
+  frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+  frame = cv2.GaussianBlur(frame, (5,5), 0)
+  _, frame = cv2.threshold(frame, 20, 255, cv2.THRESH_BINARY)
+  frame = cv2.dilate(frame, None, iterations=3)
+
+  return frame
+
+
+def get_contours(mask):
+  contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+  return contours
+
+
+def get_contour_positions(contours, threshold=900):
+  nominated_contours = []
+
+  for contour in contours:
+    (x, y, w, h) = resize_contour(cv2.boundingRect(contour), aspect_ratio=(1, 1))
+
+    if cv2.contourArea(contour) >= threshold:
+      nominated_contours.append((x, y, w, h))
+
+  return nominated_contours
+
+
+def display_contours(video_path):
   cap = cv2.VideoCapture(video_path)
 
   _, previous_frame = cap.read()
   _, current_frame = cap.read()
 
+  frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+  frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+  fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
+  out = cv2.VideoWriter("output.avi", fourcc, 5.0, (1280, 720))
+
   while cap.isOpened():
-    diff = cv2.absdiff(previous_frame, current_frame)
-    gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (5,5), 0)
-    _, thresh = cv2.threshold(blur, 20, 255, cv2.THRESH_BINARY)
-    dilated = cv2.dilate(thresh, None, iterations=3)
-    contours, _ = cv2.findContours(dilated, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    nominated_contours = []
-
-    for contour in contours:
-      (x, y, w, h) = resize_contour(cv2.boundingRect(contour), (1, 1))
-
-      if cv2.contourArea(contour) < 900:
-        continue
-
-      nominated_contours.append((x, y, w, h))
-
-    winning_contours = []
-    nominated_contours = sorted(nominated_contours, key=cmp_to_key(lambda item1, item2: item2[2] * item2[3] - item1[2] * item1[3]))
-
-    for i in range(len(nominated_contours)):
-      flag = True
-
-      for j in range(i):
-        (ix, iy, iw, ih) = nominated_contours[i]
-        (jx, jy, jw, jh) = nominated_contours[j]
-
-        if not (iy >= jy + jh or iy + ih <= jy or ix >= jx + jw or ix + iw <= jx):
-          flag = False
-
-      if flag:
-        winning_contours.append(nominated_contours[i])
+    mask = get_mask(previous_frame, current_frame)
+    contours = get_contours(mask)
+    nominated_contours = get_contour_positions(contours)
+    winning_contours = clean_contours(nominated_contours)
 
     for contour in nominated_contours:
       (x, y, w, h) = contour
-      cv2.rectangle(previous_frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+      cv2.rectangle(previous_frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
     for contour in winning_contours:
       (x, y, w, h) = contour
-      cv2.rectangle(previous_frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+      cv2.rectangle(previous_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-    cv2.imshow("Video", previous_frame)
+    cv2.putText(previous_frame, f"{len(winning_contours)} + {len(nominated_contours) - len(winning_contours)} region(s)", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 1)
+
+    image = cv2.resize(previous_frame, (1280,720))
+    out.write(image)
+
+    cv2.imshow("Activity", previous_frame)
     previous_frame = current_frame
     _, current_frame = cap.read()
 
-    k = cv2.waitKey(100)
+    k = cv2.waitKey(60)
     if k == 27 or k == ord('q'):
       break
 
   cap.release()
-  cv2.destroyAllWindows()
-
-
-fgbg = cv2.createBackgroundSubtractorMOG2(
-  varThreshold=15,
-  detectShadows=True
-)
-
-def get_mask(frame):
-  mog_mask = fgbg.apply(frame)
-  # median_blur_mask = cv2.medianBlur(mog_mask, 5)
-  # bilateral_filter_mask = cv2.bilateralFilter(median_blur_mask, 9, 75, 75)
-  # gaussian_blur_mask = cv2.GaussianBlur(bilateral_filter_mask, (13, 13), 5)
-
-  # return gaussian_blur_mask
-  return mog_mask
+  cv2.destroyallwindows()
+  out.release()
 
 
 if __name__ == '__main__':
-  display_video(r'..\datasets\RWF-2000\train\Fight\Ile3EVQA_0.avi')
+  display_contours(r'..\datasets\RWF-2000\train\Fight\EtRfZ2KP_5.avi')

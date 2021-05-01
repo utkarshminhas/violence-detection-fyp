@@ -1,0 +1,39 @@
+<html>
+  <head>
+    <title>Holi Approach Violence Detection</title>
+  </head>
+  <body>
+    <h1>HA Violence Detector</h1>
+    <form action='/result'>
+      <label for='filename'>
+        Enter the name of the file:
+      </label>
+      <input name='filename' /><br><br>
+
+      <label for='padding'>Padding Factor:</label>
+      <input name="padding" value="0.1" /><br>
+      <label for='take'>Maximum Take:</label>
+      <input name="take" value="5" /><br>
+      <label for='contour'>Contour Threshold:</label>
+      <input name="contour" value="900" /><br>
+      <label for='framebreak'>Frame Break:</label>
+      <input name="framebreak" value="5" /><br>
+      <br><label for='model'>Model</label>
+      <input name="model" value="ha_ock_0.1_5_900_5.h5" /><br>
+      <br><input type="checkbox" name="json" />
+      <label for="json">JSON Response</label><br>
+      <br><input type="checkbox" name="del" />
+      <label for="del">Remove HA files</label><br>
+      <br><input type="checkbox" name="freq" />
+      <label for="freq">Forward request (if violence detected)</label><br>
+
+      <br><button type='submit'>Evaluate</button>
+
+      <br>
+      <br>
+      <br>
+
+      Copyright &copy; Covid Bros. 2021
+    </form>
+  </body>
+</html>

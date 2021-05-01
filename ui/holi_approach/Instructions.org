@@ -1,0 +1,7 @@
+#+TITLE: Instructions for running the Holi Approach
+
+* Open data_preparator.py
+
+* Change the base_path to the path of the video folder. For example, "/datasets/RWF-2000/train/Fight"
+
+* Run data_preparator.py

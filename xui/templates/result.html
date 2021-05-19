@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>Holi Approach Violence Detection</title>
+  </head>
+  <body>
+    {% if eval == 'Safe' %}
+    <h1 style="color: green">Verdict: {{ eval }}</h1>
+    <img src="static/rick.jpg" width="50px">
+    {% else %}
+    <h1 style="color: red">Verdict: {{ eval }}</h1>
+    <img src="static/violin.jpg" width="80px">
+    {% endif %}
+    <p>Evaluated over {{ frame_count }} frames.</p>
+
+    <a href="/">Back</a>
+  </body>
+</html>
